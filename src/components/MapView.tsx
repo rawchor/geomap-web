@@ -4,8 +4,13 @@ import dynamic from "next/dynamic";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 import { ApiError, apiFetch } from "@/lib/client-api";
-import type { NearbyFriendResponse, SessionUser } from "@/lib/types";
+import { formatStatusLabel } from "@/lib/status";
+import type { NearbyFriendResponse, SessionUser, StatusResponse } from "@/lib/types";
+import ChatWidget from "./chat/ChatWidget";
+import { ChatProvider, useChat } from "./chat/ChatProvider";
 import FriendDetailPanel from "./FriendDetailPanel";
+import Navbar from "./Navbar";
+import StatusEditor from "./StatusEditor";
 
 const LeafletMap = dynamic(() => import("./LeafletMap"), { ssr: false });
 
@@ -16,12 +21,24 @@ const FALLBACK_CENTER: [number, number] = [40.7128, -74.006];
 type FriendsState = "loading" | "ready" | "error";
 
 export default function MapView({ user }: { user: SessionUser }) {
+  return (
+    <ChatProvider userId={user.userId}>
+      <MapViewInner user={user} />
+      <ChatWidget userId={user.userId} />
+    </ChatProvider>
+  );
+}
+
+function MapViewInner({ user }: { user: SessionUser }) {
   const router = useRouter();
+  const chat = useChat();
   const [center, setCenter] = useState<[number, number] | null>(null);
   const [friends, setFriends] = useState<NearbyFriendResponse[]>([]);
   const [friendsState, setFriendsState] = useState<FriendsState>("loading");
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [selected, setSelected] = useState<NearbyFriendResponse | null>(null);
+  const [myStatus, setMyStatus] = useState<StatusResponse | null>(null);
+  const [showStatusEditor, setShowStatusEditor] = useState(false);
 
   const postLocation = useCallback((latitude: number, longitude: number) => {
     apiFetch("/api/location", {
@@ -48,6 +65,15 @@ export default function MapView({ user }: { user: SessionUser }) {
     }
   }, [router]);
 
+  const loadMyStatus = useCallback(async () => {
+    try {
+      const status = await apiFetch<StatusResponse | null>("/api/status/me");
+      setMyStatus(status);
+    } catch {
+      // non-critical; the map still works without it
+    }
+  }, []);
+
   const refreshLocation = useCallback(() => {
     if (!("geolocation" in navigator)) {
       setCenter((prev) => prev ?? FALLBACK_CENTER);
@@ -70,6 +96,7 @@ export default function MapView({ user }: { user: SessionUser }) {
     const tick = () => {
       refreshLocation();
       loadFriends();
+      loadMyStatus();
     };
     // Deferred so the initial fetch runs as an async callback, matching the
     // interval tick below, rather than synchronously during the effect.
@@ -79,11 +106,13 @@ export default function MapView({ user }: { user: SessionUser }) {
       clearTimeout(initial);
       clearInterval(interval);
     };
-  }, [refreshLocation, loadFriends]);
+  }, [refreshLocation, loadFriends, loadMyStatus]);
 
   const handleRefresh = () => {
     refreshLocation();
     loadFriends();
+    loadMyStatus();
+    chat.refreshConversations();
   };
 
   const handleLogout = async () => {
@@ -91,31 +120,22 @@ export default function MapView({ user }: { user: SessionUser }) {
     router.push("/login");
   };
 
+  const handleMessage = (friend: NearbyFriendResponse) => {
+    setSelected(null);
+    chat.openThread(friend.userId, friend.displayName, friend.profilePhotoUrl);
+  };
+
   return (
     <div className="fixed inset-0">
-      <header className="absolute inset-x-0 top-0 z-[1000] flex items-center justify-between gap-3 bg-white/90 px-4 py-3 shadow-sm backdrop-blur">
-        <span className="font-medium">Hi, {user.displayName}</span>
-        <div className="flex items-center gap-4">
-          <button
-            onClick={handleRefresh}
-            className="text-sm text-blue-600 hover:underline"
-          >
-            Refresh
-          </button>
-          <button
-            onClick={handleLogout}
-            className="text-sm text-zinc-600 hover:underline"
-          >
-            Log out
-          </button>
-        </div>
-      </header>
+      <Navbar user={user} onRefresh={handleRefresh} onLogout={handleLogout} />
 
       {center ? (
         <LeafletMap
           center={center}
           friends={friends}
           onSelectFriend={setSelected}
+          ownStatusLabel={formatStatusLabel(myStatus)}
+          onSelectOwn={() => setShowStatusEditor(true)}
         />
       ) : (
         <div className="flex h-full items-center justify-center text-zinc-500">
@@ -145,7 +165,19 @@ export default function MapView({ user }: { user: SessionUser }) {
       )}
 
       {selected && (
-        <FriendDetailPanel friend={selected} onClose={() => setSelected(null)} />
+        <FriendDetailPanel
+          friend={selected}
+          onClose={() => setSelected(null)}
+          onMessage={handleMessage}
+        />
+      )}
+
+      {showStatusEditor && (
+        <StatusEditor
+          currentStatus={myStatus}
+          onClose={() => setShowStatusEditor(false)}
+          onSaved={setMyStatus}
+        />
       )}
     </div>
   );

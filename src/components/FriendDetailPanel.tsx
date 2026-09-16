@@ -2,26 +2,19 @@
 
 /* eslint-disable @next/next/no-img-element */
 
-import type { NearbyFriendResponse, StatusPreset } from "@/lib/types";
-
-const STATUS_LABELS: Record<StatusPreset, string> = {
-  FREE_TO_HANG: "Free to hang",
-  GRABBING_COFFEE: "Grabbing coffee",
-  BUSY: "Busy",
-  OUT_AND_ABOUT: "Out and about",
-};
+import { formatStatusLabel } from "@/lib/status";
+import type { NearbyFriendResponse } from "@/lib/types";
 
 export default function FriendDetailPanel({
   friend,
   onClose,
+  onMessage,
 }: {
   friend: NearbyFriendResponse;
   onClose: () => void;
+  onMessage: (friend: NearbyFriendResponse) => void;
 }) {
-  const statusText = friend.status
-    ? friend.status.customText ||
-      (friend.status.preset ? STATUS_LABELS[friend.status.preset] : null)
-    : null;
+  const statusText = formatStatusLabel(friend.status);
 
   const connectionContext =
     friend.degree === "FIRST_DEGREE"
@@ -75,6 +68,13 @@ export default function FriendDetailPanel({
             <p className="text-sm text-zinc-400">No status set</p>
           )}
         </div>
+
+        <button
+          onClick={() => onMessage(friend)}
+          className="mt-5 w-full rounded-lg bg-black px-4 py-2 text-sm font-medium text-white hover:bg-zinc-800"
+        >
+          Message
+        </button>
       </div>
     </div>
   );
