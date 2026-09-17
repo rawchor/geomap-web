@@ -109,7 +109,7 @@ export default function StatusEditor({
       onClick={onClose}
     >
       <div
-        className="flex max-h-[80vh] w-full max-w-sm flex-col rounded-t-2xl bg-white p-5 shadow-xl sm:rounded-2xl"
+        className="flex max-h-[80vh] w-full max-w-sm flex-col rounded-t-2xl bg-white p-5 text-zinc-900 shadow-xl sm:rounded-2xl"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-center justify-between">

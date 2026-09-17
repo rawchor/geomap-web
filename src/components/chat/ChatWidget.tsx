@@ -67,7 +67,7 @@ export default function ChatWidget({ userId }: { userId: string }) {
   return (
     <div className="fixed bottom-4 right-4 z-[1200] flex flex-col items-end gap-3">
       {isOpen && (
-        <div className="flex h-[28rem] w-80 flex-col overflow-hidden rounded-2xl bg-white shadow-2xl ring-1 ring-black/5">
+        <div className="flex h-[28rem] w-80 flex-col overflow-hidden rounded-2xl bg-white text-zinc-900 shadow-2xl ring-1 ring-black/5">
           <div className="flex items-center gap-2 border-b border-zinc-100 px-4 py-3">
             {activeFriendId ? (
               <>

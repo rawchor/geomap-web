@@ -59,7 +59,7 @@ export default function Navbar({
                 className="fixed inset-0 z-[999]"
                 onClick={() => setMenuOpen(false)}
               />
-              <div className="absolute right-0 z-[1001] mt-2 w-52 overflow-hidden rounded-xl bg-white py-1 shadow-lg ring-1 ring-black/5">
+              <div className="absolute right-0 z-[1001] mt-2 w-52 overflow-hidden rounded-xl bg-white py-1 text-zinc-900 shadow-lg ring-1 ring-black/5">
                 <div className="border-b border-zinc-100 px-3 py-2">
                   <p className="truncate text-sm font-medium text-zinc-900">
                     {user.displayName}

@@ -56,7 +56,13 @@ function LayerToggle({
 }) {
   return (
     <div className="leaflet-top leaflet-left">
-      <div className="leaflet-control m-3 overflow-hidden rounded-lg bg-white text-sm shadow-md ring-1 ring-black/5">
+      {/* Inline margin: Leaflet's own (unlayered) CSS otherwise beats Tailwind's
+          layered utilities regardless of import order. Top offset clears the
+          fixed navbar (~61px) above the map. */}
+      <div
+        style={{ margin: "76px 12px 12px" }}
+        className="leaflet-control overflow-hidden rounded-lg bg-white text-sm text-zinc-900 shadow-md ring-1 ring-black/5"
+      >
         <button
           onClick={() => onChange("street")}
           className={`block w-full px-3 py-1.5 text-left font-medium transition ${
@@ -97,7 +103,7 @@ export default function LeafletMap({
   return (
     <MapContainer center={center} zoom={13} className="h-full w-full" zoomControl={false}>
       <TileLayer key={layer} attribution={tiles.attribution} url={tiles.url} maxZoom={tiles.maxZoom} />
-      <ZoomControl position="bottomright" />
+      <ZoomControl position="bottomleft" />
       <Recenter center={center} />
       <LayerToggle layer={layer} onChange={setLayer} />
 
