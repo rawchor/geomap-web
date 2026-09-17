@@ -9,26 +9,37 @@ export interface RegisterRequest {
   displayName: string;
 }
 
+export type SubscriptionTier = "FREE" | "PREMIUM";
+
 export interface AuthResponse {
   token: string;
   userId: string;
   email: string;
   displayName: string;
+  subscriptionTier?: SubscriptionTier;
 }
 
 export type SessionUser = Omit<AuthResponse, "token">;
 
 export type FriendDegree = "FIRST_DEGREE" | "SECOND_DEGREE";
 
-export type StatusPreset =
-  | "FREE_TO_HANG"
-  | "GRABBING_COFFEE"
-  | "BUSY"
-  | "OUT_AND_ABOUT";
-
 export interface StatusResponse {
-  preset?: StatusPreset;
+  presetOptionId?: string;
+  presetLabel?: string;
+  presetEmoji?: string;
   customText?: string;
+}
+
+export interface StatusPresetOptionResponse {
+  id: string;
+  label: string;
+  emoji: string;
+}
+
+export interface StatusUpdateRequest {
+  presetOptionId?: string | null;
+  customText?: string | null;
+  durationMinutes?: number | null;
 }
 
 export interface NearbyFriendResponse {
@@ -40,6 +51,7 @@ export interface NearbyFriendResponse {
   degree: FriendDegree;
   mutualFriendName?: string;
   status?: StatusResponse | null;
+  locked?: boolean;
 }
 
 export interface LocationUpdateRequest {
@@ -53,3 +65,33 @@ export interface LocationResponse {
   longitude: number;
   updatedAt: string;
 }
+
+export interface ChatMessageResponse {
+  id: string;
+  senderId: string;
+  recipientId: string;
+  content: string;
+  sentAt: string;
+  readAt?: string | null;
+}
+
+export interface ConversationResponse {
+  friendId: string;
+  displayName: string;
+  profilePhotoUrl?: string;
+  lastMessage?: string;
+  lastMessageSentAt?: string;
+}
+
+export type ChatSocketMessage =
+  | { type: "message"; recipientId: string; content: string }
+  | {
+      type: "message";
+      id: string;
+      senderId: string;
+      recipientId: string;
+      content: string;
+      sentAt: string;
+      readAt?: string | null;
+    }
+  | { type: "error"; message: string };

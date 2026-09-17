@@ -22,6 +22,7 @@ export default async function MapPage() {
     userId: auth.userId,
     email: auth.email,
     displayName: auth.displayName,
+    subscriptionTier: auth.subscriptionTier,
   };
 
   return <MapView user={user} />;

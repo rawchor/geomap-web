@@ -16,6 +16,7 @@ export async function POST(request: Request) {
       userId: data.userId,
       email: data.email,
       displayName: data.displayName,
+      subscriptionTier: data.subscriptionTier,
     };
     return NextResponse.json(user);
   } catch (err) {

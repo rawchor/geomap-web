@@ -24,3 +24,18 @@ body {
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
+
+/* Leaflet's default tooltip chrome (border + arrow) replaced with a plain
+   pill, used for the current user's own status bubble on the map. */
+.leaflet-tooltip.status-bubble {
+  border: none;
+  border-radius: 9999px;
+  padding: 4px 10px;
+  font-size: 12px;
+  font-weight: 500;
+  color: #27272a;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.25);
+}
+.leaflet-tooltip.status-bubble::before {
+  display: none;
+}

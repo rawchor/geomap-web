@@ -43,5 +43,11 @@ export async function backendFetch<T>(
     return null as T;
   }
 
-  return (await res.json()) as T;
+  // Some endpoints (e.g. /status/me, POST /status with no status set) send
+  // Content-Length: 0 with a 200 instead of a 204 or `{}` body.
+  const text = await res.text();
+  if (!text) {
+    return null as T;
+  }
+  return JSON.parse(text) as T;
 }
